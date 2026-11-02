@@ -1,0 +1,22 @@
+[Unit]
+Description=Project-R Controller Daemon (gamepad hotplug, profiles, config writers)
+Documentation=https://github.com/willzmkv/pr-controller
+After=systemd-udevd.service pr-builder.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/pr-controller
+Restart=on-failure
+RestartSec=5
+# Runs as the arcade user so every config it writes is owned by that user.
+User=arcade
+Environment=HOME=/home/arcade
+# IPC endpoint (default shown; must match pr-builder.service)
+Environment=PR_BUILDER_SOCKET=/run/project-r/pr-builder.sock
+NoNewPrivileges=yes
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pr-controller
+
+[Install]
+WantedBy=multi-user.target
