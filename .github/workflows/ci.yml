@@ -8,28 +8,34 @@ on:
 
 jobs:
   test:
-    name: pytest
+    name: pytest (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.14']
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ matrix.python-version }}
 
+      # libudev for pyudev; libSDL2 for the real-library smoke test
+      # (the SDL3 smoke test is skipped where SDL3 is not packaged).
       - name: Install system deps
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y libsdl2-dev libsdl2-2.0-0 libudev-dev
+          sudo apt-get install -y libudev1 libsdl2-2.0-0
 
-      - name: Install Python deps
+      - name: Install
         run: pip install -e ".[dev]"
 
       - name: Run tests
-        run: pytest --tb=short -v
+        run: pytest --tb=short -v -rs
 
   lint:
-    name: ruff + black
+    name: ruff + black (advisory)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,8 +47,10 @@ jobs:
       - name: Install linters
         run: pip install ruff black
 
+      # Advisory: the plan-provided code keeps its aligned tables, so
+      # findings are reported as warnings and do not fail the build.
       - name: ruff check
-        run: ruff check . || echo "No source yet"
+        run: ruff check . || echo "::warning::ruff reported findings"
 
       - name: black check
-        run: black --check . || echo "No source yet"
+        run: black --check . || echo "::warning::black would reformat files"
