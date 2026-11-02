@@ -107,7 +107,8 @@ def test_device_name_is_sanitized_for_filename_and_value(tmp_path):
     path = write_retroarch_autoconfig(profile, str(tmp_path))
     assert os.path.dirname(path) == str(tmp_path)
     assert os.path.basename(path) == "Weird_'Pad'.cfg"
-    assert "input_device = \"Weird/'Pad'\"" in open(path).read()
+    with open(path) as f:
+        assert "input_device = \"Weird/'Pad'\"" in f.read()
 
 
 def test_no_temp_files_left_behind(tmp_path):

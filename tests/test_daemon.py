@@ -1,8 +1,16 @@
+import json
+import socket
+import threading
 from unittest.mock import MagicMock, patch, call
 import pytest
+from pr_controller import daemon
 from pr_controller.daemon import (
+    coldplug,
+    device_ids,
+    dispatch_event,
     handle_device_added,
     handle_device_removed,
+    is_gamepad_device,
     notify_pr_builder,
 )
 
@@ -91,14 +99,6 @@ def test_notify_pr_builder_sends_json_over_socket(tmp_path):
 
 
 # --- additions beyond the plan ----------------------------------------------
-
-import json
-import os
-import socket
-import threading
-
-from pr_controller import daemon
-from pr_controller.daemon import device_ids, is_gamepad_device, dispatch_event, coldplug
 
 
 def _udev(props=None, node="/dev/input/event7", parent_props=None, action="add"):
